@@ -1,6 +1,7 @@
 package com.learn.lister.pagerslide.activity;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,6 +18,8 @@ import android.os.Bundle;
 import androidx.core.app.NotificationCompat;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,6 +31,8 @@ import com.learn.lister.pagerslide.fragment.Fragment1;
 import com.learn.lister.pagerslide.fragment.Fragment2;
 import com.learn.lister.pagerslide.fragment.Fragment3;
 import com.learn.lister.pagerslide.fragment.Fragment4;
+import com.learn.lister.pagerslide.utils.MusicUtils;
+import com.learn.lister.pagerslide.utils.Song;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -179,7 +184,68 @@ sendChatMsg(getCurrentFocus());
         }
     }
 
+    public class MyAdapter extends BaseAdapter {
+        private Context context;
+        private List<Song> list;
 
+        public MyAdapter(List<Song> list) {
+            this.context = MainActivity.this;
+            this.list = list;
+
+        }
+
+        @Override
+        public int getCount() {
+            return list.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return list.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            ViewHolder holder = null;
+            if (view == null) {
+                holder = new ViewHolder();
+                //引入布局
+                view = View.inflate(context, R.layout.item_music_listview, null);
+                //实例化对象
+                holder.song = (TextView) view.findViewById(R.id.item_mymusic_song);
+                holder.singer = (TextView) view.findViewById(R.id.item_mymusic_singer);
+                holder.duration = (TextView) view.findViewById(R.id.item_mymusic_duration);
+                holder.position = (TextView) view.findViewById(R.id.item_mymusic_postion);
+                view.setTag(holder);
+            } else {
+                holder = (ViewHolder) view.getTag();
+            }
+            //给控件赋值
+            holder.song.setText(list.get(i).song.toString());
+            holder.singer.setText(list.get(i).singer.toString());
+            //时间需要转换一下
+            int duration = list.get(i).duration;
+            String time = MusicUtils.formatTime(duration);
+            holder.duration.setText(time);
+            holder.position.setText(i + 1 + "");
+
+            return view;
+        }
+
+        class ViewHolder {
+            TextView song;//歌曲名
+            TextView singer;//歌手
+            TextView duration;//时长
+            TextView position;//序号
+
+        }
+
+    }
 
 }
 
