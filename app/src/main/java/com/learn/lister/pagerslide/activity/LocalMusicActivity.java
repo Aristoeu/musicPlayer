@@ -1,9 +1,11 @@
 package com.learn.lister.pagerslide.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.provider.MediaStore;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -11,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -22,6 +25,8 @@ import com.learn.lister.pagerslide.R;
 import com.learn.lister.pagerslide.utils.MusicUtils;
 import com.learn.lister.pagerslide.utils.Song;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +35,7 @@ public class LocalMusicActivity extends AppCompatActivity {
     private ListView mListView;
     private List<Song> list;
     private MyAdapter adapter;
+    private MediaPlayer mediaPlayer = new MediaPlayer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +45,20 @@ public class LocalMusicActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(LocalMusicActivity.this, new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 2);
         }else
             initView();
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(LocalMusicActivity.this,list.get(i).path,Toast.LENGTH_LONG).show();
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.reset(); // 停止播放
+                }
+                try {
+                    init(i);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -52,6 +72,25 @@ public class LocalMusicActivity extends AppCompatActivity {
                 }
             default:
         }
+    }
+    public void init(int i) throws IOException {
+        File file = new File(list.get(i).path);
+        mediaPlayer.setDataSource(file.getPath()); // 指定音频文件的路径
+        mediaPlayer.prepare(); // 让MediaPlayer进入到准备状态
+        mediaPlayer.start();
+    }
+    protected void onDestroy() {
+
+        super.onDestroy();
+
+        if (mediaPlayer != null) {
+
+            mediaPlayer.stop();
+
+            mediaPlayer.release();
+
+        }
+
     }
     /**
      * 初始化view
